@@ -1,0 +1,191 @@
+/*
+//-------------------------------INSTRUCCIONES---------------------------------------
+
+PARA SU EJECUCION:
+- CORRER EL PROGRAMA TAL Y COMO SE ENCUENTRA
+- SE PEDIRÁ AL USUARIO QUE INGRESE EL NUMERO DEL ESCENARIO A PROBAR (SON 3)
+- POSTERIORMENTE SE SOLICITARÁ QUE INGRESE EL NODO ORIGEN
+- EL PROGRAMA DEVUELVE LAS RUTAS DESDE UN NODO HASTA OTRO, Y EN CASO NO EXISTA, LO INDICA.
+
+*/
+
+//---------------------------------------------------------------------------------
+
+
+package paquete.clases;
+import java.util.Scanner;
+
+/**
+ *
+ * @author anton
+ */
+public class Bellman {
+                                    
+    private int distancias[];       //DECLARAMOS EL ARREGLO QUE CONTENDRÁ LAS DISTANCIAS A LO VÉRTICES DESDE UN ORIGEN
+    private int numVertices;        //DECLARAMOS LA VARIABLE QUE RECIBE EL NUMERO DE VÉRTICES
+
+    public Bellman(int numVertices) {       //METODO CONSTRUCTOR DEL ALGORITMO
+        this.numVertices = numVertices;         //SE RECIBIRÁ COMO ENTRADA EL NUMERO DE VERTICES (NODOS) A CONSIDERAR
+        distancias = new int[numVertices];    //EN BASE AL NUMERO DE VERTICES, SE DEFINE LA DIMENSIÓN DEL ARREGLO
+    }
+    
+    //EVALUACIÓN DE RUTAS-----------------------------------
+    
+    public void evaluar(int vOrigen, int[][] matrizAdy) //LA FUNCIÓN RECIBE COMO PARÁMETROS EL VERTICE DE ORIGEN Y LA MATRIZ DE ADYACENCIA A UTILIZAR
+    {
+        for(int nodo=0; nodo<numVertices; nodo++)       //POR CADA NODO EXISTENTE
+            {distancias[nodo] = 99999;}                 //SE ESTABLECE UNA DISTANCIA INICIAL MAXIMO (QUE TIENDA A INFINITO)
+        
+        distancias[vOrigen] = 0;                        //AL NODO ELEGIDO COMO ORIGEN SE LE ASIGNA UNA DISTANCIA DE 0
+        for(int nodo=0; nodo<numVertices-1; nodo++)     //---POR CADA NODO, EXCEPTUANDO EL ULTIMO
+        {
+            for(int nodoOrigen=0; nodoOrigen<numVertices; nodoOrigen++)     //SE RECORRERA CADA NODO, CONSIDERANDO ESTE COMO ORIGEN 
+            {
+                for(int nodoDestino=0; nodoDestino<numVertices; nodoDestino++)  //ASI MISMO, PARA CADA UNO DE ESTOS SE ORRERAN TODOS LOS NODOS, CONSIDERANDOLOS COMO DESTINO
+                {
+                       if((matrizAdy[nodoOrigen][nodoDestino] != 0) & (nodoOrigen!=nodoDestino))      //SI AMBOS NODOS SON ADYACENTES, ES DECIR EXISTE UNA ARISTA CON UN PESO ENTRE ELLOS, SE EJECUTA QUE...
+                       {
+                           if(distancias[nodoDestino] > distancias[nodoOrigen]+matrizAdy[nodoOrigen][nodoDestino])  //SI LA DISTANCIA EXISTENTE EN EL ARREGLO DE DISTANCIAS ES MAYOR QUE LA NUEVA DISTANCIA (PROPUESTA)
+                                {distancias[nodoDestino] = distancias[nodoOrigen]+matrizAdy[nodoOrigen][nodoDestino];}  //LA NUEVA DISTANCIA ES ASIGNADA COMO DISTANCIA DE ESE NODO
+                       }
+                }
+            }                                                               //CUANDO EL RECORRIDO TERMINE...
+        }     //----------------                                                              //NUEVAMENTE
+        
+        for(int nodoOrigen=0; nodoOrigen<numVertices; nodoOrigen++)         //SE RECORRERA CADA NODO, CONSIDERANDO ESTE COMO ORIGEN 
+        {
+            for(int nodoDestino=0; nodoDestino<numVertices; nodoDestino++)  //ASI MISMO, PARA CADA UNO DE ESTOS SE ORRERAN TODOS LOS NODOS, CONSIDERANDOLOS COMO DESTINO
+            {
+                if((matrizAdy[nodoOrigen][nodoDestino] != 0) & (nodoOrigen!=nodoDestino))   //SE BUSCA UN PESO, ES DECIR, UNA LA ARISTA QUE LOS UNA ARISTA
+                {
+                    if(distancias[nodoDestino] > (distancias[nodoOrigen] + matrizAdy[nodoOrigen][nodoDestino])) //SI HABIENDO TERMINADO EL RECORRIDO ORIGINAL SE DETERMINA QUEAUN EXISTEN DISTANCIAS A SER REDUCIDAS 
+                        {System.out.println("Existen ciclos Negativos(-)");}                    //SE DETERMINA (CONFIRMA) LA EXISTENCIA DE CICLOS NEGATIVOS
+                }
+            }
+        }//--------------------
+                                                                    //ESTE ES EL PROCESO DE IMPRESION PARA INDICAR LOS CAMINOS POSIBLES
+                                                                    
+        for(int vertice = 0; vertice <numVertices; vertice++)       //POR CADA VERTICE (NODO EXISTENTE)
+        {
+            if(distancias[vertice] == 0 | distancias[vertice] == 99999)   //SI LA DISTANCIA DE ESE VERTICE, SEGUN EL ARREGLO, ES 0, O TIENDE A INFINITO
+            {                                                       //HAY 2 POSIBILIDADES
+                if(vertice==vOrigen)                                //1) EL VERTICES ES, PRECISAMENTE, EL ORIGEN
+                    {}
+                
+                else                                                //2) NO HAY UNA RUTA FACTIBLE ENTRE EL VERTICE DE ORIGEN, Y ESTE
+                    {System.out.println("No existe una ruta desde el R" + (vOrigen+1) + " al R" + (vertice+1));}    //SE INDICA
+            }
+            
+            else
+                {System.out.println("Distancia de R" + (vOrigen+1) + " a R" + (vertice+1) + " --> " + distancias[vertice]);}    //SE INDICA LA RUTA POSIBLE
+        } 
+    }
+    
+    
+    
+    //ESCENARIOS DE PRUEBA (TEST) AUMENTANDO LA COMPLEJIDAD-----------------------------------------------------------------------------------
+    
+    public static void main(String[] args) {
+             
+       int[][] tst = {{0, 2, 3}, {0, 0, 9}, {3, 8, 0}}; 
+        
+       int[][] TEST1 =         //R1      R2      R3       R4      R5      R6
+                         /*R1*/ {{0,     4,      8,       0,      0,      0}, 
+                         /*R2*/  {5,     0,      3,       9,      0,      0}, 
+                         /*R3*/  {0,     0,      0,       2,      0,      1},
+                         /*R4*/  {0,     0,      0,       0,      2,      0},
+                         /*R5*/  {0,     4,      0,       0,      0,      0},
+                         /*R6*/  {0,     0,      0,       1,      5,      0}};
+       
+       
+       int[][] TEST2 =         //R1      R2      R3       R4      R5      R6        R7      R8      R9       R10      R11      R12
+                         /*R1*/ {{0,     1,      0,       9,      0,      0,        0,       0,      0,       0,       0,       0},
+                         /*R2*/  {0,     0,      0,       0,      0,      4,        0,       0,      0,       0,       0,       0},
+                         /*R3*/  {8,     0,      0,       0,      0,      0,        0,       0,      0,       0,       0,       5},
+                         /*R4*/  {0,     0,      3,       0,      8,      0,        0,       0,      0,       0,       0,       0},
+                         /*R5*/  {4,     7,      0,       6,      0,      0,        0,       0,      0,       0,       0,       0},
+                         /*R6*/  {0,     6,      0,       0,      0,      0,        1,       0,      0,       0,       0,       0},
+                         /*R7*/  {0,     0,      0,       0,      0,      0,        0,       0,      0,       3,       0,       0},
+                         /*R8*/  {0,     0,      0,       0,      2,      0,        0,       0,      0,       5,       2,       0},
+                         /*R9*/  {0,     0,      0,       0,      0,      0,        5,       0,      0,       9,       0,       0},
+                         /*R10*/ {0,     0,      0,       0,      0,      0,        0,       2,      0,       0,       0,       0},
+                         /*R11*/ {0,     0,      0,       0,      0,      0,        0,       4,      0,       0,       0,       4},
+                         /*R12*/ {0,     0,      0,       1,      0,      0,        0,       0,      0,       0,       3,       0}};
+       
+       int[][] TEST3 =          //R1      R2      R3       R4      R5      R6        R7      R8      R9       R10      R11      R12     R13       R14      R15      R16        R17      R18      R19       R20      R21      R22
+                          /*R1*/ {{0,     2,      0,       0,      0,      0,        0,       0,      0,       0,       0,       4,       0,         0,       0,      0,         0,        0,       0,       0,       0,       0},
+                          /*R2*/  {1,     0,      5,       0,      0,      0,        0,       0,      0,       0,       0,       0,       0,         0,       0,      0,         0,        0,       0,       0,       0,       0},
+                          /*R3*/  {0,     0,      0,       0,      6,      0,        0,       0,      0,       0,       0,       0,       0,         4,       0,      0,         0,        0,       0,       0,       0,       0},
+                          /*R4*/  {0,     0,      0,       0,      0,      3,        0,       0,      0,       0,       0,       0,       0,         0,       0,      0,         0,        0,       0,       0,       0,       0},
+                          /*R5*/  {0,     8,      0,       0,      0,      6,        0,       0,      0,       0,       0,       0,       0,         0,       3,      0,        15,        0,       0,       0,       0,       0},
+                          /*R6*/  {0,     0,      0,       4,      0,      0,        0,       0,      0,       0,       0,       0,       0,         0,       0,      0,         7,        0,       0,       0,       0,       0},
+                          /*R7*/  {0,     0,      0,       0,      0,      0,        0,       6,      4,       0,       0,       0,       0,         0,       0,      0,         0,        3,       0,       0,       0,       0},
+                          /*R8*/  {0,     0,      0,       0,      0,      0,        3,       0,      0,       2,       0,       0,       0,         0,       0,      0,         0,        0,       0,       0,       0,       0},
+                          /*R9*/  {0,     0,      0,       0,      0,      0,        2,       0,      0,       0,       0,       0,       0,         0,       0,      0,         0,        0,       0,       0,       0,       0},
+                          /*R10*/ {0,     0,      0,       0,      0,      0,        0,       0,      1,       0,       0,       0,       0,         0,       0,      0,         0,        0,       0,       0,       0,       0},
+                          /*R11*/ {12,    0,      0,       0,      0,      0,        0,       0,      0,       0,       0,       0,       5,         2,       0,      0,         0,        0,       0,       0,       0,       0},
+                          /*R12*/ {0,     0,      5,       0,      0,      0,        0,       0,      0,       0,       0,       0,       0,         6,       0,      0,         0,        0,       0,       0,       0,       0},
+                          /*R13*/ {0,     0,      0,       0,      0,      0,        0,       0,      0,       0,       0,       0,       0,         0,       8,      0,         0,        0,       0,       0,       6,       0},
+                          /*R14*/ {0,     0,      0,       0,      0,      0,        0,       0,      0,       0,       6,       3,       0,         0,       0,      0,         0,        0,       0,       0,       0,       0},
+                          /*R15*/ {0,     0,      0,       0,      6,      0,        0,       0,      0,       0,       0,       0,       6,         0,       0,      0,         0,        0,       0,       0,       0,       8},
+                          /*R16*/ {0,     0,      0,       0,      0,      0,        0,       0,      0,       0,       0,       0,       0,         0,       0,      0,         2,        4,       0,       0,       0,       0},
+                          /*R17*/ {0,     0,      0,       0,      7,      0,        2,       0,      0,       0,       0,       0,       0,         0,       0,      2,         0,        0,       0,       0,       0,       0},
+                          /*R18*/ {0,     0,      0,       0,      0,      0,        0,       0,      0,       0,       0,       0,       0,         0,       0,      0,         0,        0,       7,       0,       0,       6},
+                          /*R19*/ {0,     0,      0,       0,      0,      0,        0,       0,      0,       0,       0,       0,       0,         0,       0,      0,         0,        6,       0,       5,       0,       0},
+                          /*R20*/ {0,     0,      0,       0,      0,      0,        0,       0,      0,       0,       0,       0,       0,         0,       0,      0,         0,        0,       6,       0,       0,       7},
+                          /*R21*/ {0,     0,      0,       0,      0,      0,        0,       0,      0,       0,       0,       0,       0,         0,       7,      0,         0,        0,       0,       0,       0,       0},
+                          /*R22*/ {0,     0,      0,       0,      0,      0,        0,       0,      0,       0,       0,       0,       3,         0,       0,      1,         0,        5,       0,       0,       0,       0}};
+
+
+
+        
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Ingrese numero de escenario a Ejecutar..." + 
+                "\n *Escenario1 (6 Routers) --> '1'" + 
+                "\n *Escenario2 (12 Routers) --> '2'" + 
+                "\n *Escenario3 (22 Routers) --> '3'");
+        
+        int x = scanner.nextInt();
+        
+       //PRUEBA PERSONALIZADA-----------------------
+       if(x==1)
+       {
+           System.out.println("\nEl numero de Routers sera: " + TEST1[0].length);
+       
+            System.out.println("Ingrese Numero del Router de Origen: ");
+            int vOrigen = scanner.nextInt();
+        
+            Bellman BF = new Bellman(TEST1[0].length);     
+            BF.evaluar(vOrigen-1, TEST1);
+       }
+       
+       
+       else if(x==2)
+       {
+           System.out.println("\nEl numero de Routers sera: " + TEST2[0].length);
+       
+            System.out.println("Ingrese Numero del Router de Origen: ");
+            int vOrigen = scanner.nextInt();
+        
+            Bellman BF = new Bellman(TEST2[0].length);
+            BF.evaluar(vOrigen-1, TEST2);
+       }
+       
+       
+       else if(x==3)
+       {
+           System.out.println("\nEl numero de Routers sera: " + TEST3[0].length);
+       
+            System.out.println("Ingrese Numero del Router de Origen: ");
+            int vOrigen = scanner.nextInt();
+        
+            Bellman BF = new Bellman(TEST3[0].length);     
+            BF.evaluar(vOrigen-1, TEST3);
+       }
+       else
+        {System.out.println("\nERROR DE ELECCION");}
+    
+       
+    }
+    
+}
